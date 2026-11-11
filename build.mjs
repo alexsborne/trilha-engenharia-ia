@@ -2,7 +2,7 @@
 // Conteúdo em ./conteudo/ (fora do git — o repositório é público e só recebe o HTML criptografado).
 // Uso: TRILHA_PASSWORD=... node build.mjs
 // Também grava ./resumo.json (sem textos), lido pelo painel Alfred.
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { webcrypto as crypto } from 'node:crypto';
 import { marked } from 'marked';
 
@@ -53,7 +53,13 @@ for (const f of cfg.fases) {
     const arquivos = [].concat(f.detalhada);
     lista = arquivos.flatMap(a => parseSemanas(readFileSync('conteudo/' + a, 'utf8')));
   } else {
-    lista = f.semanas.map(w => ({ ...w, roteiro: true }));
+    // Semana de roteiro que já foi detalhada: conteudo/semanas/Sxx.md (mesmo formato das fases detalhadas)
+    lista = f.semanas.map((w, k) => {
+      const id = 'S' + String(n + k + 1).padStart(2, '0');
+      const arq = `conteudo/semanas/${id}.md`;
+      if (existsSync(arq)) return { ...parseSemanas(readFileSync(arq, 'utf8'))[0], projeto: w.projeto };
+      return { ...w, roteiro: true };
+    });
   }
   for (const w of lista) {
     n++;
