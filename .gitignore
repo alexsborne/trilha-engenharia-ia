@@ -1,0 +1,5 @@
+# Conteúdo em texto puro — o repositório é público; só o HTML criptografado (docs/) é publicado
+conteudo/
+resumo.json
+node_modules/
+.playwright-mcp/

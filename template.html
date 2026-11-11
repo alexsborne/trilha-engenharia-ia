@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Trilha Engenheiro de IA</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #171a21; --panel-2: #1e222b; --line: #2a2f3a;
+    --text: #e7e9ee; --muted: #9aa1ae; --accent: #8b7cf6; --ok: #5cc8a1; --warn: #f7b955;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f5f6f8; --panel: #fff; --panel-2: #f0f2f5; --line: #e1e4ea;
+            --text: #1b1f27; --muted: #5d6573; --accent: #5b4bd6; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  a { color: var(--accent); }
+  #login { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+  .login-card { width: 100%; max-width: 360px; background: var(--panel); border: 1px solid var(--line);
+                border-radius: 14px; padding: 32px 28px; }
+  .login-card h1 { margin: 0 0 4px; font-size: 22px; }
+  .login-card p { margin: 0 0 22px; color: var(--muted); }
+  .login-card input { width: 100%; padding: 11px 12px; border-radius: 8px; border: 1px solid var(--line);
+                      background: var(--panel-2); color: var(--text); font-size: 15px; }
+  .login-card button, .btn { margin-top: 14px; width: 100%; padding: 11px; border: 0; border-radius: 8px;
+                       background: var(--accent); color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; }
+  .error { color: #ff6b6b; font-size: 13px; min-height: 20px; margin-top: 10px; }
+
+  #app { display: none; }
+  header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line);
+           padding: 12px 20px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 17px; flex: 1 1 auto; }
+  .prog { flex: 1 1 260px; max-width: 420px; }
+  .prog .bar { height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
+  .prog .bar div { height: 100%; background: var(--ok); }
+  .prog small { color: var(--muted); }
+  header button { background: none; border: 1px solid var(--line); color: var(--text); border-radius: 8px;
+                  padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .layout { display: grid; grid-template-columns: 320px 1fr; min-height: calc(100vh - 60px); }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } aside { max-height: 40vh; } }
+  aside { border-right: 1px solid var(--line); overflow-y: auto; padding: 10px 8px 40px; position: sticky; top: 60px;
+          height: calc(100vh - 60px); }
+  details.fase { margin: 2px 0; }
+  details.fase summary { cursor: pointer; padding: 8px 10px; border-radius: 8px; font-weight: 600; font-size: 14px;
+                         list-style: none; display: flex; justify-content: space-between; gap: 8px; }
+  details.fase summary:hover { background: var(--panel-2); }
+  details.fase summary small { color: var(--muted); font-weight: 400; white-space: nowrap; }
+  .wk { display: flex; gap: 8px; width: 100%; text-align: left; background: none; border: 0; color: var(--text);
+        padding: 6px 10px 6px 18px; border-radius: 6px; cursor: pointer; font-size: 13px; align-items: baseline; }
+  .wk:hover { background: var(--panel-2); }
+  .wk[aria-current="true"] { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .wk .id { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 32px; }
+  .wk .t { flex: 1; }
+  .wk .c { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .wk.feito .c { color: var(--ok); }
+  .wk.agora .id::after { content: " ●"; color: var(--warn); }
+  .pausa { color: var(--muted); font-size: 12px; padding: 4px 10px 4px 18px; font-style: italic; }
+
+  main { padding: 24px clamp(16px, 4vw, 48px) 80px; max-width: 900px; }
+  .crumb { color: var(--muted); font-size: 13px; }
+  main h2 { margin: 4px 0 6px; font-size: 24px; letter-spacing: -.01em; }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 10px; background: var(--panel-2);
+         color: var(--muted); margin-right: 6px; }
+  .tag.agora { background: color-mix(in srgb, var(--warn) 25%, transparent); color: var(--text); }
+  .intro { margin: 16px 0; }
+  .sessao { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin: 14px 0; }
+  .sessao > label { display: flex; gap: 10px; align-items: center; padding: 14px 16px; cursor: pointer;
+                    border-bottom: 1px solid var(--line); font-weight: 600; }
+  .sessao > label input { width: 18px; height: 18px; accent-color: var(--ok); }
+  .sessao.feito > label { color: var(--ok); }
+  .sessao .corpo { padding: 4px 18px 14px; }
+  .sessao.feito .corpo { display: none; }
+  .sessao.feito.aberta .corpo { display: block; }
+  .sessao .ver { margin-left: auto; font-weight: 400; font-size: 12px; color: var(--muted); background: none;
+                 border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
+  pre { background: var(--panel-2); padding: 12px 14px; border-radius: 8px; overflow-x: auto; font-size: 13px; }
+  code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: .92em; }
+  :not(pre) > code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
+  blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--accent); background: var(--panel-2);
+               border-radius: 0 8px 8px 0; }
+  table { border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; }
+  th { background: var(--panel-2); }
+  .nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 28px; }
+  .nav button { background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 10px 14px;
+                border-radius: 8px; cursor: pointer; }
+  .grade { color: var(--muted); font-size: 13px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<main id="login">
+  <form class="login-card" id="login-form" autocomplete="off">
+    <h1>Trilha Engenheiro de IA</h1>
+    <p>Entre com a senha da trilha.</p>
+    <input id="pw" type="password" autofocus required aria-label="Senha">
+    <button id="enter" type="submit">Entrar</button>
+    <div class="error" id="err" role="alert"></div>
+  </form>
+</main>
+
+<div id="app">
+  <header>
+    <h1>🤖 Trilha Engenheiro de IA Aplicada</h1>
+    <div class="prog"><div class="bar"><div id="barra"></div></div><small id="progtxt"></small></div>
+    <button id="hoje" type="button">Semana atual</button>
+    <button id="sair" type="button">Sair</button>
+  </header>
+  <div class="layout">
+    <aside id="menu"></aside>
+    <main id="conteudo"></main>
+  </div>
+</div>
+
+<script>
+const PAYLOAD = /*PAYLOAD*/null;
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const br = iso => new Date(iso + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+const hojeISO = () => new Date().toLocaleDateString('sv-SE');
+const KEY = 'trilha-ia-done';
+const getDone = () => new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+const setDone = s => localStorage.setItem(KEY, JSON.stringify([...s]));
+
+async function decrypt(pw) {
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const aes = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(PAYLOAD.salt), iterations: PAYLOAD.iterations, hash: 'SHA-256' },
+    k, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(PAYLOAD.iv) }, aes, b64(PAYLOAD.data));
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
+function app(D) {
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  const byId = Object.fromEntries(D.semanas.map(s => [s.id, s]));
+  const hoje = hojeISO();
+  const atual = (D.semanas.find(s => hoje <= s.fim) || D.semanas.at(-1)).id;
+  const pendente = () => { const d = getDone(); return (D.semanas.find(s => s.sessoes.some(x => !d.has(x.id))) || D.semanas.at(-1)).id; };
+  let sel = location.hash.slice(1);
+  if (!byId[sel]) sel = pendente();
+  const abertas = new Set();
+
+  function progresso() {
+    const d = getDone(), feitas = D.semanas.reduce((n, s) => n + s.sessoes.filter(x => d.has(x.id)).length, 0);
+    const pct = Math.round(feitas / D.totalSessoes * 100);
+    document.getElementById('barra').style.width = pct + '%';
+    const atrasadas = D.semanas.filter(s => s.fim < hoje).reduce((n, s) => n + s.sessoes.filter(x => !d.has(x.id)).length, 0);
+    document.getElementById('progtxt').textContent =
+      `${feitas} de ${D.totalSessoes} sessões (${pct}%) · semana do calendário: ${atual}` + (atrasadas ? ` · ${atrasadas} sessões atrasadas` : ' · em dia ✔');
+  }
+
+  function menu() {
+    const d = getDone();
+    const faseDe = Object.fromEntries(D.semanas.map(s => [s.id, s.fase]));
+    let html = '';
+    for (const f of D.fases) {
+      const ss = f.semanas.map(id => byId[id]);
+      const tot = ss.reduce((n, s) => n + s.sessoes.length, 0), ok = ss.reduce((n, s) => n + s.sessoes.filter(x => d.has(x.id)).length, 0);
+      const open = f.semanas.includes(sel);
+      html += `<details class="fase" ${open ? 'open' : ''}><summary><span>${esc(f.id)} · ${esc(f.nome)}</span><small>${ok}/${tot}</small></summary>`;
+      const idx = D.calendario.findIndex(c => c.id === f.semanas[0]);
+      for (const c of D.calendario.slice(idx)) {
+        if (c.pausa) { if (!html.endsWith('</summary>')) html += `<div class="pausa">⏸ ${br(c.inicio)} — ${esc(c.motivo)}</div>`; continue; }
+        if (faseDe[c.id] !== f.id) break;
+        const s = byId[c.id], feitas = s.sessoes.filter(x => d.has(x.id)).length;
+        const cls = [feitas === s.sessoes.length ? 'feito' : '', s.id === atual ? 'agora' : ''].join(' ');
+        html += `<button class="wk ${cls}" data-id="${s.id}" aria-current="${s.id === sel}"><span class="id">${s.id}</span><span class="t">${esc(s.titulo)}</span><span class="c">${br(s.inicio)} · ${feitas}/${s.sessoes.length}</span></button>`;
+      }
+      html += '</details>';
+    }
+    document.getElementById('menu').innerHTML = html;
+  }
+
+  function pagina() {
+    const s = byId[sel], f = D.fases.find(x => x.id === s.fase), d = getDone();
+    const i = D.semanas.indexOf(s), ant = D.semanas[i - 1], prox = D.semanas[i + 1];
+    let h = `<div class="crumb">${esc(f.id)} · ${esc(f.nome)}</div>
+      <h2>${esc(s.id)} · ${esc(s.titulo)}</h2>
+      <span class="tag">${br(s.inicio)} a ${br(s.fim)}</span>${s.id === atual ? '<span class="tag agora">semana atual</span>' : ''}${s.projeto ? `<span class="tag">projeto ${esc(s.projeto)}</span>` : ''}
+      <div class="intro">${s.introHtml}</div>`;
+    if (i === 0 || s.id === f.semanas[0]) h += `<p class="grade">📚 Grade coberta: ${esc(f.grade)}<br>🏗️ ${f.projetos.map(esc).join(' · ')}</p>`;
+    h += s.sessoes.map(x => {
+      const ok = d.has(x.id);
+      return `<section class="sessao ${ok ? 'feito' : ''} ${abertas.has(x.id) ? 'aberta' : ''}">
+        <label><input type="checkbox" data-sid="${x.id}" ${ok ? 'checked' : ''}> ${esc(x.titulo)}
+        ${ok && x.html ? `<button class="ver" data-ver="${x.id}" type="button">${abertas.has(x.id) ? 'ocultar' : 'rever'}</button>` : ''}</label>
+        ${x.html ? `<div class="corpo">${x.html}</div>` : ''}</section>`;
+    }).join('');
+    h += `<div class="nav">${ant ? `<button data-id="${ant.id}">← ${ant.id}</button>` : '<span></span>'}${prox ? `<button data-id="${prox.id}">${prox.id} →</button>` : ''}</div>`;
+    const el = document.getElementById('conteudo');
+    el.innerHTML = h;
+    el.querySelectorAll('a[href^="http"]').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
+  }
+
+  function draw(scroll) { menu(); pagina(); progresso(); history.replaceState(null, '', '#' + sel); if (scroll) window.scrollTo(0, 0); }
+
+  document.addEventListener('click', e => {
+    const v = e.target.closest('[data-ver]');
+    if (v) { e.preventDefault(); abertas.has(v.dataset.ver) ? abertas.delete(v.dataset.ver) : abertas.add(v.dataset.ver); pagina(); return; }
+    const b = e.target.closest('[data-id]');
+    if (b) { sel = b.dataset.id; draw(true); }
+  });
+  document.addEventListener('change', e => {
+    if (!e.target.dataset.sid) return;
+    const d = getDone(); e.target.checked ? d.add(e.target.dataset.sid) : d.delete(e.target.dataset.sid); setDone(d); draw(false);
+  });
+  document.getElementById('hoje').onclick = () => { sel = atual; draw(true); };
+  document.getElementById('sair').onclick = () => { sessionStorage.removeItem('trilha-pw'); location.reload(); };
+  draw(false);
+}
+
+document.getElementById('login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('enter'), err = document.getElementById('err');
+  btn.disabled = true; btn.textContent = 'Entrando…'; err.textContent = '';
+  try { const pw = document.getElementById('pw').value; const D = await decrypt(pw); sessionStorage.setItem('trilha-pw', pw); app(D); }
+  catch { err.textContent = 'Senha incorreta.'; }
+  finally { btn.disabled = false; btn.textContent = 'Entrar'; }
+});
+const salvo = sessionStorage.getItem('trilha-pw');
+if (salvo) decrypt(salvo).then(app).catch(() => sessionStorage.removeItem('trilha-pw'));
+</script>
+</body>
+</html>
